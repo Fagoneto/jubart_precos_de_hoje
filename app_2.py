@@ -197,8 +197,9 @@ PRODUTOS = produtos_geral[:]
 @app.get("/", response_class=HTMLResponse)
 def home(request: Request):
     return templates.TemplateResponse(
-        "index.html",
-        {
+        request=request,
+        name="index.html",
+        context={
             "request": request,
             "cidades": CIDADES,
             "produtos": PRODUTOS,
@@ -206,7 +207,6 @@ def home(request: Request):
             "data_referencia": data_ref_str,
         },
     )
-
 
 @app.get("/api/pesquisa", response_class=JSONResponse)
 def pesquisa(
