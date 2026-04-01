@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.DS_Store
+.ipynb_checkpoints/
+SQL_join_precos_do_dia.ipynb
