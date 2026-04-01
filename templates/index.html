@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <!-- Google Tag Manager -->
+  <script>
+  (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+  new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+  j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+  'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+  })(window,document,'script','dataLayer','GTM-5P5K4D5R');
+  </script>
+  <!-- End Google Tag Manager -->
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jubart Preços</title>
+  <meta name="description" content="Compare preços e encontre ofertas na sua cidade com o Jubart Preços.">
+  <link rel="icon" href="/static/logo_escura.png">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5P5K4D5R"
+  height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <!-- End Google Tag Manager (noscript) -->
+
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'jubart_page_context',
+      site_section: 'public_tool',
+      page_type: 'jubart_precos_home',
+      page_language: 'pt',
+      tool_name: 'jubart_precos'
+    });
+  </script>
+
+  <div class="page-shell">
+    <main class="container">
+      <header class="hero">
+        <div class="hero-brand">
+          <img src="/static/logo_escura.png" alt="JubartData" class="hero-logo">
+        </div>
+
+        <div class="hero-copy">
+          <h1>Jubart Preços</h1>
+          <p class="hero-subtitle">Compare preços e encontre ofertas na sua cidade.</p>
+          <p class="subinfo">Base atualizada em: <strong>{{ data_referencia }}</strong></p>
+        </div>
+      </header>
+
+      <section class="filtros">
+        <div class="campo">
+          <label for="cidade">Cidade</label>
+          <select id="cidade">
+            <option value="">Selecione</option>
+            {% for cidade in cidades %}
+              <option value="{{ cidade }}">{{ cidade }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="produto">Produto</label>
+          <select id="produto">
+            <option value="">Selecione</option>
+            {% for produto in produtos %}
+              <option value="{{ produto }}">{{ produto }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="campo">
+          <label for="palavra_chave">Palavra-chave</label>
+          <input type="text" id="palavra_chave" placeholder="Ex: file, lombo, posta">
+        </div>
+
+        <div class="campo">
+          <label for="tipo_tabela">Ranking</label>
+          <select id="tipo_tabela">
+            {% for item in tipos_tabela %}
+              <option value="{{ item.value }}">{{ item.label }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="campo campo-botao">
+          <button id="btnPesquisar">Pesquisar</button>
+        </div>
+      </section>
+
+      <section class="bloco bloco--full" id="blocoResultado" style="display:none;">
+        <div class="bloco-header">
+          <div class="bloco-title-row">
+            <h2 id="tituloTabela">Resultados</h2>
+            <span class="badge-public">Hoje</span>
+          </div>
+          <p class="busca-meta" id="buscaMeta"></p>
+          <p class="obs-ranking" id="obsRanking"></p>
+        </div>
+
+        <div id="melhorOferta"></div>
+        <div class="resultado-mobile" id="cardsResultado"></div>
+        <div class="resultado-desktop" id="tabelaResultado"></div>
+      </section>
+      
+        <div class="desktop-cta-panel">
+          <a
+            href="https://jubartdata.com.br"
+            class="desktop-cta desktop-cta--site"
+            target="_blank"
+            rel="noopener"
+            id="ctaSiteDesktop"
+          >
+            Visitar site
+          </a>
+
+          <a
+            href="https://wa.me/5561993553849"
+            class="desktop-cta desktop-cta--whatsapp"
+            target="_blank"
+            rel="noopener"
+            id="ctaWhatsappDesktop"
+          >
+            WhatsApp
+          </a>
+        </div>
+
+      
+    </main>
+  </div>
+
+  <div class="mobile-cta-bar">
+    <a
+      href="https://jubartdata.com.br"
+      class="mobile-cta mobile-cta--site"
+      target="_blank"
+      rel="noopener"
+      id="ctaSite"
+    >
+      Visitar site
+    </a>
+
+    <a
+      href="https://wa.me/5561993553849"
+      class="mobile-cta mobile-cta--whatsapp"
+      target="_blank"
+      rel="noopener"
+      id="ctaWhatsapp"
+    >
+      WhatsApp
+    </a>
+  </div>
+
+  <script>
+    function pushDL(payload) {
+      window.dataLayer = window.dataLayer || [];
+      window.dataLayer.push(payload);
+    }
+
+    function fmtPreco(valor) {
+      if (valor === null || valor === undefined || valor === "" || Number.isNaN(Number(valor))) {
+        return "-";
+      }
+      return `R$ ${Number(valor).toFixed(2)}`;
+    }
+
+    function fmtPadronizado(item) {
+      if (
+        item.preco_padronizado !== null &&
+        item.preco_padronizado !== undefined &&
+        item.preco_padronizado !== "" &&
+        item.unidade_padrao
+      ) {
+        return `R$ ${Number(item.preco_padronizado).toFixed(2)}/${item.unidade_padrao}`;
+      }
+      return "-";
+    }
+
+    function fmtDesconto(valor) {
+      if (valor === null || valor === undefined || valor === "" || Number.isNaN(Number(valor))) {
+        return "-";
+      }
+      return `${Number(valor)}%`;
+    }
+
+    function montarHeroOferta(item, tipo = "preco") {
+      if (!item) return "";
+
+      const descontoHtml = tipo === "desconto" && item.desconto !== null && item.desconto !== undefined
+        ? `<span class="hero-offer-discount">${fmtDesconto(item.desconto)}</span>`
+        : "";
+
+      return `
+        <article class="hero-offer-card">
+          <div class="hero-offer-top">
+            <span class="hero-offer-badge">${tipo === "preco" ? "Melhor oferta" : "Maior desconto"}</span>
+            ${descontoHtml}
+          </div>
+
+          <h3 class="hero-offer-title">${item.produto ?? ""}</h3>
+
+          <div class="hero-offer-prices">
+            <div>
+              <span class="meta-label">Preço padronizado</span>
+              <strong class="hero-price-main">${fmtPadronizado(item)}</strong>
+            </div>
+            <div>
+              <span class="meta-label">Preço</span>
+              <strong class="hero-price-secondary">${fmtPreco(item.preco)}</strong>
+            </div>
+          </div>
+
+          <div class="hero-offer-meta">
+            <span><strong>Rede:</strong> ${item.rede ?? "-"}</span>
+            <span><strong>Loja:</strong> ${item.loja ?? "-"}</span>
+          </div>
+        </article>
+      `;
+    }
+
+    function montarCards(lista, tipo = "preco") {
+      if (!lista || lista.length === 0) {
+        return `<p class="vazio">Nenhum resultado encontrado.</p>`;
+      }
+
+      return lista.map((item, idx) => {
+        const descontoHtml = tipo === "desconto"
+          ? `
+            <div class="resultado-card-row">
+              <span class="meta-label">Desconto</span>
+              <strong class="discount-value">${fmtDesconto(item.desconto)}</strong>
+            </div>
+          `
+          : "";
+
+        return `
+          <article class="resultado-card ${idx === 0 ? "resultado-card--top" : ""}">
+            <div class="resultado-card-head">
+              <span class="resultado-card-rank">#${idx + 1}</span>
+              ${idx === 0 ? `<span class="resultado-card-badge">Destaque</span>` : ""}
+            </div>
+
+            <h3 class="resultado-card-title">${item.produto ?? ""}</h3>
+
+            <div class="resultado-card-grid">
+              <div class="resultado-card-row">
+                <span class="meta-label">Preço padronizado</span>
+                <strong>${fmtPadronizado(item)}</strong>
+              </div>
+
+              <div class="resultado-card-row">
+                <span class="meta-label">Preço</span>
+                <strong>${fmtPreco(item.preco)}</strong>
+              </div>
+
+              ${descontoHtml}
+
+              <div class="resultado-card-row">
+                <span class="meta-label">Rede</span>
+                <span>${item.rede ?? "-"}</span>
+              </div>
+
+              <div class="resultado-card-row">
+                <span class="meta-label">Loja</span>
+                <span>${item.loja ?? "-"}</span>
+              </div>
+            </div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    function montarTabela(lista, tipo = "preco") {
+      if (!lista || lista.length === 0) {
+        return `<p class="vazio">Nenhum resultado encontrado.</p>`;
+      }
+
+      let html = "<table><thead><tr>";
+
+      if (tipo === "preco") {
+        html += `
+          <th>Produto</th>
+          <th>Preço padronizado</th>
+          <th>Preço</th>
+          <th>Rede</th>
+          <th>Loja</th>
+        `;
+      } else {
+        html += `
+          <th>Produto</th>
+          <th>Desconto</th>
+          <th>Preço padronizado</th>
+          <th>Preço</th>
+          <th>Rede</th>
+          <th>Loja</th>
+        `;
+      }
+
+      html += "</tr></thead><tbody>";
+
+      lista.forEach((item, idx) => {
+        const classeTop = idx === 0 ? "linha-topo" : "";
+        html += `<tr class="${classeTop}">`;
+
+        if (tipo === "preco") {
+          html += `
+            <td class="col-produto">${item.produto ?? ""}</td>
+            <td>${fmtPadronizado(item)}</td>
+            <td>${fmtPreco(item.preco)}</td>
+            <td>${item.rede ?? ""}</td>
+            <td>${item.loja ?? ""}</td>
+          `;
+        } else {
+          html += `
+            <td class="col-produto">${item.produto ?? ""}</td>
+            <td>${fmtDesconto(item.desconto)}</td>
+            <td>${fmtPadronizado(item)}</td>
+            <td>${fmtPreco(item.preco)}</td>
+            <td>${item.rede ?? ""}</td>
+            <td>${item.loja ?? ""}</td>
+          `;
+        }
+
+        html += "</tr>";
+      });
+
+      html += "</tbody></table>";
+      return html;
+    }
+
+    async function pesquisar() {
+      const cidade = document.getElementById("cidade").value;
+      const produto = document.getElementById("produto").value;
+      const palavraChave = document.getElementById("palavra_chave").value.trim();
+      const tipoTabela = document.getElementById("tipo_tabela").value;
+
+      if (!cidade || !produto) {
+        alert("Selecione cidade e produto.");
+        return;
+      }
+
+      pushDL({
+        event: 'precos_search',
+        site_section: 'public_tool',
+        page_type: 'jubart_precos_home',
+        tool_name: 'jubart_precos',
+        cidade: cidade || '',
+        produto: produto || '',
+        palavra_chave: palavraChave || '',
+        tipo_tabela: tipoTabela || ''
+      });
+
+      const url = `/api/pesquisa?cidade=${encodeURIComponent(cidade)}&produto=${encodeURIComponent(produto)}&palavra_chave=${encodeURIComponent(palavraChave)}&tipo_tabela=${encodeURIComponent(tipoTabela)}`;
+
+      try {
+        const resp = await fetch(url);
+        const data = await resp.json();
+
+        pushDL({
+          event: 'precos_result_view',
+          site_section: 'public_tool',
+          page_type: 'jubart_precos_home',
+          tool_name: 'jubart_precos',
+          cidade: data.cidade || '',
+          produto: data.produto || '',
+          palavra_chave: data.palavra_chave || '',
+          tipo_tabela: data.tipo_tabela || '',
+          total_encontrado: Number(data.total_encontrado || 0),
+          data_referencia: data.data_referencia || ''
+        });
+
+        if (Number(data.total_encontrado || 0) === 0) {
+          pushDL({
+            event: 'precos_no_result',
+            site_section: 'public_tool',
+            page_type: 'jubart_precos_home',
+            tool_name: 'jubart_precos',
+            cidade: data.cidade || '',
+            produto: data.produto || '',
+            palavra_chave: data.palavra_chave || '',
+            tipo_tabela: data.tipo_tabela || ''
+          });
+        }
+
+        document.getElementById("blocoResultado").style.display = "block";
+
+        document.getElementById("tituloTabela").textContent =
+          data.tipo_tabela === "mais_barato" ? "Mais baratos hoje" : "Melhores descontos";
+
+        const palavra = data.palavra_chave ? ` • filtro: ${data.palavra_chave}` : "";
+        document.getElementById("buscaMeta").textContent =
+          `${data.cidade} • ${data.produto} • ${data.total_encontrado} ofertas${palavra} • ${data.data_referencia}`;
+
+        document.getElementById("obsRanking").textContent =
+          data.tipo_tabela === "mais_barato"
+            ? "Ordem por preço padronizado (R$/kg ou R$/l) quando disponível."
+            : "Ordem por desconto, com apoio do preço padronizado para comparação.";
+
+        const lista = data.ranking_escolhido || [];
+        const tipoRender = data.tipo_tabela === "mais_barato" ? "preco" : "desconto";
+
+        document.getElementById("melhorOferta").innerHTML = lista.length
+          ? montarHeroOferta(lista[0], tipoRender)
+          : "";
+
+        document.getElementById("cardsResultado").innerHTML = montarCards(lista, tipoRender);
+        document.getElementById("tabelaResultado").innerHTML = montarTabela(lista, tipoRender);
+      } catch (erro) {
+        console.error(erro);
+
+        pushDL({
+          event: 'precos_search_error',
+          site_section: 'public_tool',
+          page_type: 'jubart_precos_home',
+          tool_name: 'jubart_precos'
+        });
+
+        alert("Erro ao buscar dados.");
+      }
+    }
+
+    document.getElementById("btnPesquisar").addEventListener("click", pesquisar);
+
+    document.getElementById("palavra_chave").addEventListener("keydown", function(event) {
+      if (event.key === "Enter") {
+        pesquisar();
+      }
+    });
+
+    document.getElementById("ctaSite")?.addEventListener("click", function() {
+      pushDL({
+        event: 'precos_cta_site_click',
+        site_section: 'public_tool',
+        page_type: 'jubart_precos_home',
+        tool_name: 'jubart_precos',
+        cta_label: 'visitar_site'
+      });
+    });
+
+    document.getElementById("ctaWhatsapp")?.addEventListener("click", function() {
+      pushDL({
+        event: 'precos_whatsapp_click',
+        site_section: 'public_tool',
+        page_type: 'jubart_precos_home',
+        tool_name: 'jubart_precos',
+        cta_label: 'whatsapp'
+      });
+    });
+  </script>
+</body>
+</html>
