@@ -1,0 +1,4 @@
+cd /Users/franciscoabraao/Documents/Jubart_2025_ambiente_de_teste/ambiente_de_teste/jubart_precos_varejo/jubart_precos_de_hoje
+git add app_2.py
+git commit -m "Corrige TemplateResponse para compatibilidade no Render"
+git push
